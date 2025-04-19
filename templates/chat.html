@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Assistant</title>
+</head>
+<body>
+    <h1>Chatbot Assistant</h1>
+
+    <div style="border:1px solid #ccc; padding:10px; width:400px; height:300px; overflow:auto;">
+        {% for sender, message in chat_history %}
+            <p><strong>{{ sender }}:</strong> {{ message }}</p>
+        {% endfor %}
+    </div>
+
+    <form method="POST" style="margin-top:10px;">
+        <input type="text" name="question" placeholder="Posez une question..." required>
+        <button type="submit">Envoyer</button>
+    </form>
+
+    <!-- Formulaire pour rafraîchir -->
+    <form method="POST" action="/refresh" style="margin-top:10px;">
+        <button type="submit">🔄 Rafraîchir</button>
+    </form>
+</body>
+</html>

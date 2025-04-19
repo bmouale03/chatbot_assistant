@@ -54,6 +54,31 @@ with gr.Blocks(title="Assistant Entreprise") as demo:
             ajout = gr.Button("Ajouter")
             ajout_status = gr.Textbox(label="", interactive=False)
             ajout.click(ajouter_faq, inputs=[q, a], outputs=ajout_status)
+            
+            with gr.Tab("📊 Statistiques"):
+                stats_output = gr.Textbox(label="Statistiques globales", lines=6, interactive=False)
+                logs_output = gr.Textbox(label="5 dernières interactions", lines=10, interactive=False)
+                btn_stats = gr.Button("📈 Rafraîchir les stats")
+
+     
+
+        def afficher_stats():
+            from chatbot_logic_gpt_db import get_stats, get_recent_logs
+            stats = get_stats()
+            logs = get_recent_logs()
+
+            txt_stats = (
+                f"Total questions : {stats['total']}\n"
+                f"Réponses de la FAQ : {stats['faq']}\n"
+                f"Réponses GPT : {stats['gpt']}"
+            )
+
+            txt_logs = "\n".join([f"[{ts}] ({src}) {q}" for q, src, ts in logs])
+            return txt_stats, txt_logs
+
+        btn_stats.click(afficher_stats, outputs=[stats_output, logs_output])
+
+
 
         def toggle_admin(status):
             return gr.update(visible=status.startswith("✅"))

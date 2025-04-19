@@ -48,9 +48,46 @@ def get_response(user_input):
         if "insufficient_quota" in str(e):
             return "🚫 GPT : Vous avez dépassé votre quota d’utilisation. Veuillez vérifier votre abonnement sur platform.openai.com."
         return f"Erreur GPT : {str(e)}"
+    if answer:
+        log_usage(user_input, "faq")
+        return answer
+    ...
+    log_usage(user_input, "gpt")
+
 
 def search_faq(question):
     cursor.execute("SELECT question, answer FROM faq WHERE question LIKE ?", ('%' + question + '%',))
     results = cursor.fetchall()
     return results
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS logs (
+    question TEXT,
+    source TEXT,  -- "faq" ou "gpt"
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+def log_usage(question, source):
+    cursor.execute("INSERT INTO logs (question, source) VALUES (?, ?)", (question, source))
+    conn.commit()
+
+def get_stats():
+    cursor.execute("SELECT COUNT(*) FROM logs")
+    total = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM logs WHERE source = 'faq'")
+    from_faq = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM logs WHERE source = 'gpt'")
+    from_gpt = cursor.fetchone()[0]
+
+    return {
+        "total": total,
+        "faq": from_faq,
+        "gpt": from_gpt
+    }
+
+def get_recent_logs(limit=5):
+    cursor.execute("SELECT question, source, timestamp FROM logs ORDER BY timestamp DESC LIMIT ?", (limit,))
+    return cursor.fetchall()
